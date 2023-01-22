@@ -5,6 +5,7 @@ let person = require("./person.js");
 const morgan = require("morgan");
 const { ppid } = require("process");
 const cors = require("cors");
+require('dotenv').config()
 
 const requestLogger = (req, res, next) => {
   console.log("method:", req.method);
@@ -89,4 +90,4 @@ const unknownEndpoint = (request, response) => {
 app.use(unknownEndpoint);
 
 app.listen(process.env.PORT || 3001);
-console.log(`Server running on port ${PORT}`);
+console.log(`Server running on port ${process.env.PORT}`);
