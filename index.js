@@ -1,11 +1,19 @@
 const http = require("http");
 const express = require("express");
-const app = express();
-let person = require("./person.js");
+const mongoose = require("mongoose");
 const morgan = require("morgan");
 const { ppid } = require("process");
 const cors = require("cors");
-require('dotenv').config()
+
+require("dotenv").config();
+
+console.log("process.argv",process.argv[2])
+const url = process.env.MONGODB_URI
+
+console.log('connecting to', url)
+
+let person = require("./person.js");
+const app = express();
 
 const requestLogger = (req, res, next) => {
   console.log("method:", req.method);
@@ -13,6 +21,7 @@ const requestLogger = (req, res, next) => {
   console.log("body:", req.body);
   next();
 };
+
 app.use(cors());
 app.use(express.json());
 app.use(requestLogger);
@@ -51,6 +60,7 @@ app.get("/info", (request, response) => {
 
 app.delete("/api/persons/:id", (request, response) => {
   const id = Number(request.params.id);
+  console.log(id, person)
   person = person.filter((i) => i.id !== id);
 
   response.json(person).end();
@@ -78,7 +88,6 @@ app.post("/api/persons", (request, response) => {
     number: body.number || "",
     id: generateId(),
   };
-
   person = person.concat(one);
   response.json(one);
 });
@@ -91,3 +100,4 @@ app.use(unknownEndpoint);
 
 app.listen(process.env.PORT || 3001);
 console.log(`Server running on port ${process.env.PORT}`);
+console.log(`DB `,process.env);
