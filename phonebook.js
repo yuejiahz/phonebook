@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 require("dotenv").config();
 
@@ -19,3 +20,13 @@ mongoose.connect(url)
     name: String,
     number: String,
   })
+
+  phonebookSchema.set("toJSON", {
+    transform:(document, returnedObj)=>{
+        returnedObjid=returnedObj._id.toString();
+        delete returnedObject._id
+        delete returnedObject.__v
+    }
+  })
+  
+  module.exports = mongoose.model("Phonebook",phonebookSchema)

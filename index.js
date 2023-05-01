@@ -5,14 +5,10 @@ const morgan = require("morgan");
 const { ppid } = require("process");
 const cors = require("cors");
 
-require("dotenv").config();
-
-console.log("process.argv",process.argv[2])
-const url = process.env.MONGODB_URI
-
-console.log('connecting to', url)
 
 let person = require("./person.js");
+let phonebook = require("./phonebook.js")
+
 const app = express();
 
 const requestLogger = (req, res, next) => {
@@ -24,10 +20,10 @@ const requestLogger = (req, res, next) => {
 
 app.use(cors());
 app.use(express.json());
-app.use(requestLogger);
-app.use(
-  morgan(":method :url :status :res[content-length] - :response-time ms")
-);
+// app.use(requestLogger);
+// app.use(
+//   morgan(":method :url :status :res[content-length] - :response-time ms")
+// );
 
 app.get("/", (request, response) => {
   response.send("<h1>Hello World!</h1>");
@@ -71,7 +67,8 @@ const generateId = () => {
   return maxId + 1;
 };
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", async(request, response) => {
+  console.log(request.body)
   const body = request.body;
   if (!body.name || !body.number) {
     return response.status(400).json({
@@ -79,16 +76,25 @@ app.post("/api/persons", (request, response) => {
     });
   }
   const p = person.find((i) => i.name === body.name);
+const phonebookList = phonebook.find();
+console.log(phonebookList)
   if (p) {
-    return response.status(400).json({ error: "name must be unique" });
+    throw Error("name must be unique");
+    // return response.status(400).json({ error: "name must be unique" });
   }
 
   const one = {
     name: body.name,
     number: body.number || "",
-    id: generateId(),
+    // id: generateId(),
   };
-  person = person.concat(one);
+  // const newRecord = new phonebook(one)
+  // person = person.concat(one);
+  // await newRecord.save();
+  const newLIst = await phonebook.find({}).then((result)=>{
+    console.log(result)
+  })
+  // console.log(newRecord, newLIst)
   response.json(one);
 });
 
@@ -100,4 +106,3 @@ app.use(unknownEndpoint);
 
 app.listen(process.env.PORT || 3001);
 console.log(`Server running on port ${process.env.PORT}`);
-console.log(`DB `,process.env);
