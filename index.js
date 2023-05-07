@@ -6,7 +6,6 @@ const { ppid } = require("process");
 const cors = require("cors");
 require("dotenv").config();
 
-const person = require("./person.js");
 const Phonebook = require("./models/phonebook.js");
 
 const app = express();
@@ -53,9 +52,9 @@ app.get("/api/persons/:id", async (request, response) => {
   }
 });
 
-app.get("/info", (request, response) => {
+app.get("/info", async(request, response) => {
   response.send(
-    `Phonebook has info for ${person.length} person \n\n ${Date()}`
+    `Phonebook has info for ${await Phonebook.countDocuments()} person \n\n ${Date()}`
   );
 });
 
@@ -75,7 +74,10 @@ app.post("/api/persons", async (request, response) => {
   const data = await Phonebook.findOne({ name: body.name });
 
   if (data) {
-    throw Error("name must be unique");
+    return response.status(400).json({
+      error: "name must be unique!",
+    });
+   
   }
 
   const newRecord = new Phonebook({
