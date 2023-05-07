@@ -4,10 +4,10 @@ const mongoose = require("mongoose");
 const morgan = require("morgan");
 const { ppid } = require("process");
 const cors = require("cors");
+require("dotenv").config();
 
-
-let person = require("./person.js");
-let phonebook = require("./phonebook.js")
+const person = require("./person.js");
+const Phonebook = require("./models/phonebook.js");
 
 const app = express();
 
@@ -20,32 +20,37 @@ const requestLogger = (req, res, next) => {
 
 app.use(cors());
 app.use(express.json());
-// app.use(requestLogger);
-// app.use(
-//   morgan(":method :url :status :res[content-length] - :response-time ms")
-// );
+app.use(requestLogger);
+app.use(
+  morgan(":method :url :status :res[content-length] - :response-time ms")
+);
 
 app.get("/", (request, response) => {
   response.send("<h1>Hello World!</h1>");
 });
 
-app.get("/api/persons", (request, response) => {
-  if (request.query) {
-    const searchedValue = person.filter((i) =>
-      new RegExp(request.query.search, "i").test(i.name)
-    );
+app.get("/api/persons", async (request, response) => {
+  if (request.query.search) {
+    const searchedValue = await Phonebook.find({
+      name: { $regex: request.query.search },
+    });
     response.json(searchedValue);
+  } else {
+    const list = await Phonebook.find().then((list) => {
+      response.json(list);
+    });
+    return list;
   }
-  response.json(person);
 });
 
-app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const note = person.find((i) => i.id === id);
-  if (!note) {
+app.get("/api/persons/:id", async (request, response) => {
+  const id = request.params.id;
+  const data = await Phonebook.find((i) => i.id === id);
+  if (!data) {
     return response.status(404).json("content not found");
+  } else {
+    response.json(data);
   }
-  response.json(note);
 });
 
 app.get("/info", (request, response) => {
@@ -54,48 +59,34 @@ app.get("/info", (request, response) => {
   );
 });
 
-app.delete("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  console.log(id, person)
-  person = person.filter((i) => i.id !== id);
-
-  response.json(person).end();
+app.delete("/api/persons/:id", async (request, response) => {
+  const data = await Phonebook.findOne({ _id: request.params.id });
+  await Phonebook.deleteOne({ _id: request.params.id });
+  response.json(data).end();
 });
 
-const generateId = () => {
-  const maxId = person.length > 0 ? Math.max(...person.map((n) => n.id)) : 0;
-  return maxId + 1;
-};
-
-app.post("/api/persons", async(request, response) => {
-  console.log(request.body)
+app.post("/api/persons", async (request, response) => {
   const body = request.body;
   if (!body.name || !body.number) {
     return response.status(400).json({
       error: "name or number missing",
     });
   }
-  const p = person.find((i) => i.name === body.name);
-const phonebookList = phonebook.find();
-console.log(phonebookList)
-  if (p) {
+  const data = await Phonebook.findOne({ name: body.name });
+
+  if (data) {
     throw Error("name must be unique");
-    // return response.status(400).json({ error: "name must be unique" });
   }
 
-  const one = {
+  const newRecord = new Phonebook({
     name: body.name,
     number: body.number || "",
-    // id: generateId(),
-  };
-  // const newRecord = new phonebook(one)
-  // person = person.concat(one);
-  // await newRecord.save();
-  const newLIst = await phonebook.find({}).then((result)=>{
-    console.log(result)
-  })
-  // console.log(newRecord, newLIst)
-  response.json(one);
+  });
+  await newRecord.save();
+  response.json({
+    name: body.name,
+    number: body.number || "",
+  });
 });
 
 const unknownEndpoint = (request, response) => {
