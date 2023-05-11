@@ -52,7 +52,7 @@ app.get("/api/persons/:id", async (request, response) => {
   }
 });
 
-app.get("/info", async(request, response) => {
+app.get("/info", async (request, response) => {
   response.send(
     `Phonebook has info for ${await Phonebook.countDocuments()} person \n\n ${Date()}`
   );
@@ -62,6 +62,25 @@ app.delete("/api/persons/:id", async (request, response) => {
   const data = await Phonebook.findOne({ _id: request.params.id });
   await Phonebook.deleteOne({ _id: request.params.id });
   response.json(data).end();
+});
+app.put("/api/persons/:id", async (request, response) => {
+  const body = request.body;
+  if (!body.name || !body.number) {
+    return response.status(400).json({
+      error: "name or number missing",
+    });
+  }
+  const data = await Phonebook.findOne({ name: body.name });
+
+  if (!data) {
+    return response.status(400).json({
+      error: "record does not exist!",
+    });
+  }
+  const updated = await Phonebook.findOneAndUpdate(body);
+  updated.save();
+
+  response.json(updated).end();
 });
 
 app.post("/api/persons", async (request, response) => {
@@ -77,7 +96,6 @@ app.post("/api/persons", async (request, response) => {
     return response.status(400).json({
       error: "name must be unique!",
     });
-   
   }
 
   const newRecord = new Phonebook({
