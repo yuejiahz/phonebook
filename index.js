@@ -70,7 +70,7 @@ app.put("/api/persons/:id", async (request, response) => {
       error: "name or number missing",
     });
   }
-  const data = await Phonebook.findOne({ name: body.name });
+  const data = await Phonebook.findOne({ _id: body.id });
 
   if (!data) {
     return response.status(400).json({
