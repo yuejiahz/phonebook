@@ -23,6 +23,7 @@ app.use(requestLogger);
 app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms")
 );
+app.use(express.static("build"));
 
 app.get("/", (request, response) => {
   response.send("<h1>Hello World!</h1>");
