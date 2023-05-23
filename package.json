@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
+    "build:ui": "cd ../phonebook-f && rm -rf build && npm run build && cp -r build ../phonebook",
+    "deploy": "fly deploy",
+    "deploy:full": "npm run build:ui && npm run deploy",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js"
   },
