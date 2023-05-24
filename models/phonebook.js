@@ -19,8 +19,8 @@ async function connect() {
 
 const Schema = mongoose.Schema;
 const phonebookSchema = new Schema({
-  name: String,
-  number: String,
+  name: { type: String, minLength: 3, required: true },
+  number: { type: String, minLength: 10, required: true },
 });
 
 phonebookSchema.set("toJSON", {
