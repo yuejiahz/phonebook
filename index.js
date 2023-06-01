@@ -103,7 +103,9 @@ app.post("/api/persons", async (request, response) => {
     name: body.name,
     number: body.number || "",
   });
+
   await newRecord.save();
+
   response.json({
     name: body.name,
     number: body.number || "",

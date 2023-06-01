@@ -20,7 +20,17 @@ async function connect() {
 const Schema = mongoose.Schema;
 const phonebookSchema = new Schema({
   name: { type: String, minLength: 3, required: true },
-  number: { type: String, minLength: 10, required: true },
+  number: {
+    type: String,
+    minLength: 8,
+    required: true,
+    validator: {
+      validate: () => {
+        return "/d{2,3}-d+/".test();
+      },
+      message: (props) => `${props.value} is not a valid phone number!`,
+    },
+  },
 });
 
 phonebookSchema.set("toJSON", {
