@@ -7,9 +7,9 @@ const { ppid } = require("process");
 const cors = require("cors");
 
 const requestLogger = (req, res, next) => {
-  // console.log("method:", req.method);
-  // console.log("path:", req.path);
-  // console.log("body:", req.body);
+  console.log("method:", req.method);
+  console.log("path:", req.path);
+  console.log("body:", req.body);
   next();
 };
 app.use(cors());
@@ -88,6 +88,5 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint);
 
-const PORT = 3001;
-app.listen(PORT);
+app.listen(process.env.PORT || 3001);
 console.log(`Server running on port ${PORT}`);
